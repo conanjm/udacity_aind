@@ -1,9 +1,10 @@
 
 from sample_players import DataPlayer
-from min_max import *
+from mcts import *
+from alpha_beta_search import *
 import random
 
-class CustomPlayer(DataPlayer):
+class CustomPlayer_AlphaBeta(DataPlayer):
     """ Implement your own agent to play knight's Isolation
 
     The get_action() method is the only required method for this project.
@@ -50,7 +51,33 @@ class CustomPlayer(DataPlayer):
                 self.queue.put(random.choice(state.actions()))
         else:
             ###### iterative deepening ######
-            depth_limit = 4
-            for depth in range(1, depth_limit):
+            depth_limit = 5
+            for depth in range(1, depth_limit + 1):
                 best_move = alpha_beta_search(state, self.player_id, depth)
             self.queue.put(best_move)
+
+class CustomPlayer_MCTS(DataPlayer):
+    """
+    Implement an agent to play knight's Isolation with Monte Carlo Tree Search
+    """
+    def mcts(self, state):
+        root = MCTS_Node(state)
+        if root.state.terminal_test():
+            return random.choice(state.actions())
+        for _ in range(iter_limit):
+            child = tree_policy(root)
+            if not child:
+                continue
+            reward = default_policy(child.state)
+            backup(child, reward)
+
+        idx = root.children.index(best_child(root))
+        return root.children_actions[idx]
+
+    def get_action(self, state):
+        if state.ply_count < 2:
+            self.queue.put(random.choice(state.actions()))
+        else:
+            self.queue.put(self.mcts(state))
+
+CustomPlayer = CustomPlayer_AlphaBeta
