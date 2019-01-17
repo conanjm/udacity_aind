@@ -1,6 +1,7 @@
 
 from sample_players import DataPlayer
-
+from min_max import *
+import random
 
 class CustomPlayer(DataPlayer):
     """ Implement your own agent to play knight's Isolation
@@ -42,5 +43,14 @@ class CustomPlayer(DataPlayer):
         # EXAMPLE: choose a random move without any search--this function MUST
         #          call self.queue.put(ACTION) at least once before time expires
         #          (the timer is automatically managed for you)
-        import random
-        self.queue.put(random.choice(state.actions()))
+        if state.ply_count < 4:
+            if state in self.data:
+                self.queue.put(self.data[state])
+            else:
+                self.queue.put(random.choice(state.actions()))
+        else:
+            ###### iterative deepening ######
+            depth_limit = 4
+            for depth in range(1, depth_limit):
+                best_move = alpha_beta_search(state, self.player_id, depth)
+            self.queue.put(best_move)
